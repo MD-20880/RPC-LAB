@@ -1,13 +1,17 @@
 
 package main
 import (
-//	"errors"
+	"flag"
+	"net"
+	"net/rpc"
+
+	//	"errors"
 //	"flag"
 //	"fmt"
 //	"net"
 	"time"
 	"math/rand"
-//	"secretstrings/stubs"
+	"secretstrings/stubs"
 //	"net/rpc"
 )
 
@@ -21,3 +25,24 @@ func ReverseString(s string, i int) string {
     return string(runes)
 }
 
+type SecretStringOperations struct {
+}
+
+func (s *SecretStringOperations) Reverse(req stubs.Request,res *stubs.Response)(err error){
+	res.Message = ReverseString(req.Message,10)
+	return
+}
+
+func (s *SecretStringOperations) FastReverse(req stubs.Request,res *stubs.Response)(err error){
+	res.Message = ReverseString(req.Message,2)
+	return
+}
+
+func main() {
+	pAddr := flag.String("port","8030","Port to listen on")
+	flag.Parse()
+	rpc.Register(&SecretStringOperations{})
+	listener, _ := net.Listen("tcp",":"+*pAddr)
+	defer listener.Close()
+	rpc.Accept(listener)
+}
